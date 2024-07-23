@@ -54,10 +54,10 @@ object EmberServerSimpleExample extends IOApp {
     HttpRoutes
       .of[F] {
         case req @ POST -> Root =>
-          for {
+          for
             // json <- req.decodeJson[Json]
             resp <- Ok("test")
-          } yield resp
+          yield resp
         case GET -> Root =>
           Ok("ok")
           // Ok(Json.obj("root" -> Json.fromString("GET")))
@@ -68,14 +68,6 @@ object EmberServerSimpleExample extends IOApp {
             .take(100)
             .through(fs2.text.utf8.encode[F])
           Ok(body).map(_.withContentType(headers.`Content-Type`(MediaType.text.plain)))
-        case GET -> Root / "ws" =>
-          val send: Stream[F, WebSocketFrame] =
-            Stream.awakeEvery[F](1.seconds).map(_ => WebSocketFrame.Text("text"))
-          val receive: Pipe[F, WebSocketFrame, Unit] = _.evalMap {
-            case WebSocketFrame.Text(text, _) => Sync[F].delay(println(text))
-            case other => Sync[F].delay(println(other))
-          }
-          wsb.build(send, receive)
       }
       .orNotFound
   }
